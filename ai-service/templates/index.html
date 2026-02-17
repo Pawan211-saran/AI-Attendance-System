@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Attendance System</title>
+    <style>
+        /* Body Styling */
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1f4037, #99f2c8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            color: #fff;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        /* Video Styling */
+        video {
+            border-radius: 20px;
+            border: 5px solid rgba(255,255,255,0.7);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 30px;
+            border: none;
+            background: #00c6ff;
+            background: linear-gradient(45deg, #00c6ff, #0072ff);
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 1.3rem;
+            padding: 10px 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 10px;
+            font-size: 0.9rem;
+            color: #eee;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>AI Attendance System</h1>
+    <p>Look at the camera to mark your attendance</p>
+
+    <video id="video" width="350" autoplay></video>
+
+    <button onclick="capture()">Mark Attendance</button>
+
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    {% if result %}
+    <div class="result">
+        {{ result }}
+    </div>
+    {% endif %}
+
+    <div class="footer">
+        Developed by Anish 🚀
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (err) {
+                alert("Camera access denied or not supported!");
+                console.error(err);
+            }
+        }
+
+        startCamera();
+
+        function capture() {
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            context.drawImage(video, 0, 0);
+
+            canvas.toBlob(blob => {
+                const formData = new FormData();
+                formData.append("file", blob, "capture.jpg");
+
+                fetch("/recognize", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(html => {
+                    document.open();
+                    document.write(html);
+                    document.close();
+                });
+            }, "image/jpeg");
+        }
+    </script>
+</body>
+</html>
