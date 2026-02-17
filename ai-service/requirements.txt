@@ -1,8 +1,6 @@
 fastapi
 uvicorn
-jinja2
-python-multipart
-pandas
 opencv-python-headless
 face-recognition
 numpy
+pillow
